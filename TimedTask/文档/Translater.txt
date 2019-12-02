@@ -1,0 +1,136 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+
+//----------------------------------------------------------------*/
+// 版权所有：
+// 文 件 名：Translater.cs
+// 功能描述：
+// 创建标识：m.sh.lin0328@163.com 2014/8/22 21:52:46
+// 修改描述：
+//----------------------------------------------------------------*/
+namespace TimedTask.Utility
+{
+    /// <summary>
+    /// 语言类型
+    /// </summary>
+    public class LanguageType
+    {
+        /// <summary>
+        /// 中文
+        /// </summary>
+        public static string Chinese = "zh-cn";
+        /// <summary>
+        /// 英文
+        /// </summary>
+        public static string English = "en";
+    }
+
+    /// <summary>
+    /// 语言翻译类
+    /// </summary>
+    public class Translater
+    {
+        /// <summary>
+        /// 翻译方法 中文："zh-cn", 英文："en" type：MircsoftTanslater，GoogleTanslater
+        /// </summary>
+        /// <param name="sourceText">翻译原文</param>
+        /// <param name="fromLanguage">原始语言</param>
+        /// <param name="toLanguage">目标语言</param>
+        /// <param name="type">翻译API</param>
+        /// <returns>译文</returns>
+        public static string Translate(string sourceText, string fromLanguage, string toLanguage, string type = "MircsoftTanslater")
+        {
+            string translateStr = string.Empty;
+            switch (type)
+            {
+                case "MircsoftTanslater":
+                    translateStr = MircsoftTanslater(sourceText, fromLanguage, toLanguage);//"zh-cn", "en";
+                    break;
+            }
+            return translateStr;
+        }
+        #region 微软翻译
+        /// <summary>
+        /// 微软翻译API :  语言类型："zh-cn", "en"
+        /// </summary>
+        /// <param name="orgStr">翻译原文</param>
+        /// <param name="fromType">原文语言类型</param>
+        /// <param name="toType">目标语言类型</param>
+        /// <returns></returns>
+        public static string MircsoftTanslater(string orgStr, string fromType, string toType)
+        {
+            string content = string.Empty;
+            string appId = "56E164FED4017D272E06AD7E16778536251CA5CB";
+            string text = orgStr;// "Translate this for me";
+            string from = fromType;// "en";
+            string to = toType;// "zh-cn";
+
+            string uri = "http://api.microsofttranslator.com/v2/Http.svc/Translate?appId=" + appId + "&text=" + System.Web.HttpUtility.UrlEncode(text) + "&from=" + from + "&to=" + to;
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
+            WebResponse response = null;
+            try
+            {
+                response = httpWebRequest.GetResponse();
+                StreamReader reader = new StreamReader(response.GetResponseStream());
+                content = reader.ReadToEnd();//"<string xmlns=\"http://schemas.microsoft.com/2003/10/Serialization/\">Hello, China</string>" 
+                content = content.Replace("<string xmlns=\"http://schemas.microsoft.com/2003/10/Serialization/\">", "");
+                content = content.Replace("</string>", "");
+                response.Close();
+                reader.Dispose();
+            }
+            catch (WebException e)
+            {
+                content = ProcessWebException(e, "Failed to translate");
+            }
+            finally
+            {
+                if (response != null)
+                {
+                    response.Close();
+                    response = null;
+                }
+            }
+            return content;
+        }
+        private static string ProcessWebException(WebException e, string message)
+        {
+            string result = string.Empty;
+            result = string.Format("{0}: {1}", message, e.ToString());
+            // Obtain detailed error information
+            string strResponse = string.Empty;
+            using (HttpWebResponse response = (HttpWebResponse)e.Response)
+            {
+                using (Stream responseStream = response.GetResponseStream())
+                {
+                    using (StreamReader sr = new StreamReader(responseStream, System.Text.Encoding.ASCII))
+                    {
+                        strResponse = sr.ReadToEnd();
+                    }
+                }
+            }
+            result = string.Format("Http status code={0}, error message={1}", e.Status, strResponse);
+            return result;
+        }
+        #endregion
+    }
+    /// <summary>
+    /// 翻译返回类
+    /// </summary>
+    public class ResponseResult
+    {
+        public ResponseData responseData { get; set; }
+        public string responseDetails { get; set; }
+        public string responseStatus { get; set; }
+    }
+    /// <summary>
+    ///  
+    /// </summary>
+    public class ResponseData
+    {
+        public string translatedText { get; set; }
+    }
+}

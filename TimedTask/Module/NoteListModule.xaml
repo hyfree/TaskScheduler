@@ -1,0 +1,110 @@
+﻿<UserControl x:Class="TimedTask.Module.NoteListModule"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"  
+             mc:Ignorable="d" 
+             xmlns:control="clr-namespace:TimedTask.Control"
+             Height="405" Width="795"
+             DataContext="{Binding NoteListViewModel,Source={StaticResource Locator}}"
+             Background="Transparent">
+    <!--页面加载-->
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadCommand}"/>
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Closed">
+            <i:InvokeCommandAction Command="{Binding CloseCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <UserControl.Resources>
+        <DataTemplate x:Key="NoteListTemplate">
+            <Border x:Name="bd" BorderBrush="#FFC8C0C0" BorderThickness="0,0,0,0.5" VerticalAlignment="Stretch" CornerRadius="0">
+                <StackPanel Height="24" Width="500" HorizontalAlignment="Left" Orientation="Horizontal">
+                    <Label Content="{Binding Title}" FontSize="12" Width="355" HorizontalAlignment="Left" />
+                    <Label Content="{Binding TypeId,Converter={StaticResource myNoteTypeById}}" Width="35"/>
+                    <Label Content="{Binding CreateDate,Converter={StaticResource myDateFormat}}" Width="78" HorizontalAlignment="Left"  />
+                    <Button x:Name="btn_Delete" Width="20" Style="{StaticResource DeleteBtnStyle}"
+                            Click="Delete_Click"/>
+                    <StackPanel.ToolTip>
+                        <Label>
+                            <TextBlock Text="{Binding Content}" FontSize="12" TextWrapping="Wrap" Width="300" Foreground="#03899E"/>
+                        </Label>
+                    </StackPanel.ToolTip>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Border x:Name="mainBoder" Background="#FFF9F9F9" BorderThickness="0 1 0 1">
+        <StackPanel Orientation="Vertical">
+            <Border x:Name="bdTop" BorderBrush="Black" BorderThickness="0">
+                <Label Content="可在右侧面板添加或修改记事..." HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            </Border>
+            <StackPanel x:Name="spMain" Orientation="Horizontal">
+                <Border x:Name="bdLeft" 
+                        BorderThickness="0 1 1 0" 
+                        BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" 
+                        Width="500">
+                    <StackPanel Orientation="Vertical">
+                        <!--查询-->
+                        <Border BorderThickness="0,0,0,0.5" BorderBrush="#006600" Height="28">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="类别："/>
+                                <ComboBox x:Name="cboQueryType" Margin="3 0 3 0" Width="70" FontSize="12"
+                                      ItemsSource="{Binding NoteListViewModel.NoteTypeList,Source={StaticResource Locator}}" 
+                                      DisplayMemberPath="Name"  
+                                      SelectedValuePath="Id" 
+                                      SelectionChanged="btnQuery_Click">
+                                </ComboBox>
+                                <Label Content="标题：" Margin="10,0,0,0"/>
+                                <TextBox Name="txtQueryTitle" FontWeight="Normal" Height="22" Width="150"/>
+                                <Button Click="btnQuery_Click" Content="搜索" Width="50" Margin="8,0,0,2" VerticalAlignment="Bottom" />
+                            </StackPanel>
+                        </Border>
+                        <ListBox x:Name="lstNote" BorderThickness="0" Height="315" VerticalAlignment="Top"
+                             ItemTemplate="{StaticResource NoteListTemplate}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction 
+                                      Command="{Binding NoteListViewModel.NoteSelectedChangedCommand,Source={StaticResource Locator}}"
+                                      CommandParameter="{Binding SelectedItem, ElementName=lstNote}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ListBox>
+                        <control:Pager Height="25" Width="490" HorizontalAlignment="Left"  x:Name="uPager" VerticalAlignment="Top" />
+                    </StackPanel>
+                </Border>
+                <Border x:Name="bdRight" 
+                        BorderThickness="0 1 0 0" 
+                        BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" 
+                        Width="245">
+                    <StackPanel Orientation="Vertical" x:Name="mNote" DataContext="{Binding NoteModel}">
+                        <Label Content="记事本" Style="{StaticResource BoldLabelStyle}" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                        <Label Content="标题" HorizontalAlignment="Left"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="txtTitle" Text="{Binding Title}" Width="148" Height="24" Margin="2 0 0 0" />
+                            <ComboBox x:Name="cboType" Margin="3 0 3 0" Width="70" FontSize="12"
+                                      ItemsSource="{Binding NoteListViewModel.NoteTypeList,Source={StaticResource Locator}}" 
+                                      DisplayMemberPath="Name"  
+                                      SelectedValuePath="Id" 
+                                      SelectedValue="{Binding NoteListViewModel.NoteModel.TypeId,Source={StaticResource Locator}}" 
+                                      IsSynchronizedWithCurrentItem="True"/>
+                        </StackPanel>
+                        <Label Content="内容" HorizontalAlignment="Left"/>
+                        <TextBox x:Name="txtContent" Text="{Binding Content}" xml:space="preserve" Margin="2" 
+                                 TextWrapping="Wrap" VerticalContentAlignment="Top" HorizontalAlignment="Left"
+                                 AcceptsReturn="True" Height="218" Width="220"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 4 0 0">
+                            <Button x:Name="btnOk" Width="50" Content="{Binding NoteListViewModel.AddBtnText,Source={StaticResource Locator}}" 
+                                    Click="btnOk_Click" CommandParameter="{Binding Id}"
+                                    />
+                            <Button x:Name="btnReset" Content="重置" Width="50" Margin="8 0 0 0" 
+                                    Command="{Binding NoteListViewModel.ResetCommand,Source={StaticResource Locator}}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

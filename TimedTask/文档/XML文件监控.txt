@@ -1,0 +1,39 @@
+﻿
+
+        #region xml监控
+
+        //文件监控
+        //Thread tWork = new Thread(XmlMonitor);
+        //tWork.IsBackground = true;
+        //tWork.Start();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        //public void XmlMonitor()
+        //{
+        //    FileSystemWatcher fw = new FileSystemWatcher();
+        //    fw.Path = TimedTask.Model.App.TaskConfig.Substring(0, TimedTask.Model.App.TaskConfig.LastIndexOf("\\"));
+        //    fw.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+        //    fw.Filter = "*.xml";
+        //    fw.Changed += new FileSystemEventHandler(OnChanged);
+        //    fw.EnableRaisingEvents = true;//是否提交事
+        //}
+
+        //private void OnChanged(object source, FileSystemEventArgs e)
+        //{
+        //    try
+        //    {
+        //        Bind();
+        //    }
+        //    catch (IOException)
+        //    {
+        //        Thread.Sleep(1000);
+        //        Bind();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Log.SaveLog("MainWindow OnChanged\r\n"+ex.ToString());
+        //    }
+        //}
+        #endregion
